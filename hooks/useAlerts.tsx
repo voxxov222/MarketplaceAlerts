@@ -1,7 +1,10 @@
-import { useState, useEffect, useContext, ReactNode, useCallback } from 'react';
+import { useState, useEffect, useContext, ReactNode } from 'react';
 import { AlertProfile, CreateAlertData, alertsService } from '../services/alerts';
 import { AlertsContext, AlertsContextType } from '../contexts/AlertsContext';
+import { createLogger } from '../lib/logger';
 import { useAuth } from './useAuth';
+
+const log = createLogger('alerts');
 
 export function AlertsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -35,7 +38,10 @@ export function AlertsProvider({ children }: { children: ReactNode }) {
   };
 
   const createAlert = async (data: CreateAlertData) => {
-    if (!user) return { error: new Error('Not authenticated') };
+    if (!user) {
+      log.error('alert create blocked, no authenticated user', {});
+      return { error: new Error('Not authenticated') };
+    }
 
     const { alert, error } = await alertsService.createAlert(user.id, data);
     if (!error && alert) {

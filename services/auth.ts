@@ -1,4 +1,7 @@
+import { createLogger } from '../lib/logger';
 import { supabase } from './supabase';
+
+const log = createLogger('auth');
 
 export interface SignUpData {
   email: string;
@@ -46,16 +49,35 @@ export const authService = {
       email,
       password,
     });
+
+    if (error) {
+      log.error('sign in failed', { error });
+    } else {
+      log.info('sign in succeeded', { userId: data?.user?.id });
+    }
+
     return { data, error };
   },
 
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      log.error('sign out failed', { error });
+    } else {
+      log.info('sign out succeeded');
+    }
+
     return { error };
   },
 
   getSession: async () => {
     const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      log.error('session read failed', { error });
+    }
+
     return { session: data.session, error };
   },
 

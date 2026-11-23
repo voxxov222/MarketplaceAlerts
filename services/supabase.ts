@@ -2,9 +2,23 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('supabase');
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+
+const requiredConfig: Record<string, string> = {
+  EXPO_PUBLIC_SUPABASE_URL: supabaseUrl,
+  EXPO_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
+};
+
+const missingConfig = Object.keys(requiredConfig).filter((name) => !requiredConfig[name].trim());
+
+if (missingConfig.length > 0) {
+  log.error('supabase client created without required expo public env vars', { missingConfig });
+}
 
 const createStorageAdapter = () => {
   if (Platform.OS === 'web') {
