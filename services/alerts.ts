@@ -1,4 +1,7 @@
+import { createLogger } from '../lib/logger';
 import { supabase } from './supabase';
+
+const log = createLogger('alerts');
 
 export interface AlertProfile {
   id: string;
@@ -40,6 +43,13 @@ export const alertsService = {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    if (error) {
+      log.error('alert list load failed', { userId, error });
+    } else {
+      log.info('alert list loaded', { userId, count: data?.length ?? 0 });
+    }
+
     return { alerts: data as AlertProfile[] | null, error };
   },
 
@@ -52,6 +62,13 @@ export const alertsService = {
       })
       .select()
       .single();
+
+    if (error) {
+      log.error('alert create failed', { userId, error });
+    } else {
+      log.info('alert created', { userId, alertId: data?.id });
+    }
+
     return { alert: data as AlertProfile | null, error };
   },
 
@@ -62,6 +79,13 @@ export const alertsService = {
       .eq('id', alertId)
       .select()
       .single();
+
+    if (error) {
+      log.error('alert update failed', { alertId, changedFields: Object.keys(updates), error });
+    } else {
+      log.info('alert updated', { alertId });
+    }
+
     return { alert: data as AlertProfile | null, error };
   },
 
@@ -72,6 +96,13 @@ export const alertsService = {
       .eq('id', alertId)
       .select()
       .single();
+
+    if (error) {
+      log.error('alert toggle failed', { alertId, isActive, error });
+    } else {
+      log.info('alert toggled', { alertId, isActive });
+    }
+
     return { alert: data as AlertProfile | null, error };
   },
 
@@ -80,6 +111,13 @@ export const alertsService = {
       .from('alert_profiles')
       .delete()
       .eq('id', alertId);
+
+    if (error) {
+      log.error('alert delete failed', { alertId, error });
+    } else {
+      log.info('alert deleted', { alertId });
+    }
+
     return { error };
   },
 };
